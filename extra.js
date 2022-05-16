@@ -1,78 +1,149 @@
-selectedRaw = null
-function onSubmit() {
-    var formData = readFromData();
-    event.preventDefault();
-    if(selectedRaw === null) 
-        insertData(formData);
-    else 
-        updateData(formData);
+const form = document.getElementById("form-list");
+const userTable = document.getElementById("users-table");
+var idInput = document.getElementById("id")
+var nameInput = document.getElementById("name")
+var emailInput = document.getElementById("email-address")
+var passwordInput = document.getElementById("password")
+var submitInput = document.getElementById("saveFormList")
+
+const url = "http://localhost:3000/details";
+
+
+function mapTr(details) {
+    return `<tr data-id=${details.id}>
+            <td>${details.id}</td>
+            <td>${details.name}</td>
+            <td>${details.email}</td>
+            <td>${details.password}</td>
+            <td data-id=${details.id}> <a  id="edit-list">Edit</a></td>
+            <td data-id=${details.id}> <a id="delete-list">Delete</a></td>
+            </tr>`;
+    }
+
+
+fetch(url)
+    .then(response => {
+        if(response.ok) {
+            console.log("Get request successful")
+        }else 
+            console.log("Get request unsuccessful")
+        return response;
+        
+    })
+    .then(response => response.json())
+    .then(data => {
+        const userList = data.map(details => {
+            return mapTr(details);
+        }).join("");
+
+        userTable.children[1].innerHTML= userList;
+
+    })
+    .catch(err => console.log("Can't Fetch Data..!"));
+
+
+form.addEventListener("submit", function(e) {
+    e.preventDefault()
+
+    fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+        id: idInput.value,
+        name: nameInput.value,
+        email: emailInput.value,
+        password: passwordInput.value
+    }),
+    headers: {
+        "Content-Type": "application/json",
+    },
+    })
+    .then(res => res.text())
+    .then(data => {
+        console.log(data);
+
+        var result = document.getElementById("users-table")
+        result= mapTr({
+                id: idInput.value,
+                name: nameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value
+            });
+            let res = `<table>${result}</table>`;
+            let doc = new DOMParser().parseFromString(res, 'text/html');
+        
+            userTable.children[1].appendChild(doc.body.firstChild.firstChild.firstChild);
+    })
+    .catch(err => console.log(err));
+})
+
+
+userTable.addEventListener("click", (e) => {
+    e.preventDefault();
+    let deleteRaw = e.target.id == "delete-list";
     
+    let id = e.target.parentElement.dataset.id
 
-    resetForm();
-}
+    if(deleteRaw) {
+        fetch(`${url}/${id}`, {
+            method: "DELETE",
+        })
+        .then(res => res.text())
+        .then(() => {
+            Array.from(userTable.children[1].children).forEach(element => {
+                if(element.dataset.id == id) {
+                    element.remove(); 
+                }
+            });
+        })
+        .catch(err => console.log(err))
+    }
+})
 
-function readFromData() {
-    var formData = {};
-    formData["id"] = document.getElementById("id").value;
-    formData["name"] = document.getElementById("name").value;
-    formData["emailAddress"] = document.getElementById("email-address").value;
-    formData["password"] = document.getElementById("password").value;
-    return formData;
-}
+userTable.addEventListener("click", (e) => {
+    e.preventDefault();
+    let idDetails = e.target.id == "edit-list";
+    const idEdit = e.target.parentElement.dataset.id;
 
-
-function insertData(data) {
-    var tableData = document.getElementById("user-list").getElementsByTagName("tbody")[0];
-    var newRaw = tableData.insertRow(tableData.lenght);
-    var cell1 = newRaw.insertCell(0);
-        cell1.innerHTML = data.id;
-    var cell2 = newRaw.insertCell(1);
-        cell2.innerHTML = data.name;
-    var cell3 = newRaw.insertCell(2);
-        cell3.innerHTML = data.emailAddress;
-    var cell4 = newRaw.insertCell(3);
-        cell4.innerHTML = data.password;
-    var cell5 = newRaw.insertCell(4);
-        cell5.innerHTML = `<a onClick="editData(this)">Edit</a>`
-    var cell6 = newRaw.insertCell(5);
-        cell6.innerHTML = `<a onClick="onDelete(this)">Delete</a>`
-
-}
-
-function resetForm() {
-    document.getElementById("id").value = "";
-    document.getElementById("name").value = "";
-    document.getElementById("email-address").value = "";
-    document.getElementById("password").value = "";
-    selectedRaw = null;
-}
-
-function editData(td) {
-    selectedRaw = td.parentElement.parentElement;
-    document.getElementById("id").value = selectedRaw.cells[0].innerHTML;
-    document.getElementById("name").value = selectedRaw.cells[1].innerHTML;
-    document.getElementById("email-address").value = selectedRaw.cells[2].innerHTML;
-    document.getElementById("password").value = selectedRaw.cells[3].innerHTML;
-}
-
-function updateData(formData) {
-    selectedRaw.cells[0].innerHTML = formData.id;
-    selectedRaw.cells[1].innerHTML = formData.name;
-    selectedRaw.cells[2].innerHTML = formData.emailAddress;
-    selectedRaw.cells[3].innerHTML = formData.password;
-}
-
-function onDelete(td) {
-    var row = td.parentElement.parentElement;
-    document.getElementById("user-list").deleteRow(row.rowIndex);
-
-    resetForm();
-}
-
-
-
-
-
+        
+    if(idDetails) {
+        const nameEdit = e.target.parentElement.previousElementSibling.previousElementSibling.previousElementSibling.textContent;
+        const emailEdit = e.target.parentElement.previousElementSibling.previousElementSibling.textContent;
+        const passwordEdit = e.target.parentElement.previousElementSibling.textContent;
+    
+        const data = {
+            idEdit,
+            nameEdit,
+            emailEdit,
+            passwordEdit
+        }
+    
+        idInput.value = data.idEdit;
+        nameInput.value = data.nameEdit;
+        emailInput.value = data.emailEdit;
+        passwordInput.value = data.passwordEdit;
+    }
+    
+    submitInput.addEventListener("click", (e) => {
+        e.preventDefault();
+        fetch(`${url}/${idEdit}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                id: idInput.value,
+                name: nameInput.value,
+                email: emailInput.value,
+                password: passwordInput.value
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+            })
+            .then(res => res.text())
+            .then(data => {
+                console.log(data);
+            }) 
+    });
+     
+});
 
 
 
