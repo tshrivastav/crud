@@ -77,27 +77,36 @@ fetch(url)
             let doc = new DOMParser().parseFromString(res, 'text/html');
         
             userTable.children[1].appendChild(doc.body.firstChild.firstChild.firstChild);
-        }).catch(err => console.log(err));
+       }).catch(err => console.log(err));
 
     });
 
 
 //////////////////// PUT ////////////////////////////////////
+/* Array.from(userTable.children[1].children).forEach(element => {
+    if(element.dataset.id == id) {
+        console.log(element.children[0])
+    }
+}); */
+
 
 function enableInputName(name, id) {
-    let inputValue = document.querySelector(".editname");
-        inputValue.style.display = "block";
-        
-        inputValue.value = name;
+    const inputValue = document.querySelector(".editname")
+    Array.from(userTable.children[1].children).forEach(inputrownd => {
+        if(inputrownd.dataset.id == id) {
+            inputrownd.children[1].children[0].style.display = "block";
+            inputValue.value = name;
 
+        }
+    });   
 
-        const editBtn = document.querySelector(".edit-btn");
-        editBtn.style.display = "none";
+    const editBtn = document.querySelector(".edit-btn");
+    editBtn.style.display = "none";
 
-    const idEdit = id;
+    
     updateInput.addEventListener("click", (e) => {
         e.preventDefault();
-        fetch(`${url}/${idEdit}`, {
+        fetch(`${url}/${id}`, {
             method: "PUT",
             headers: {
                 "Accept": "application/json",
@@ -109,12 +118,21 @@ function enableInputName(name, id) {
             })
             .then(res => res.text())
             .then(data => {
-                mapTr(userTable.children[1].innerHTML= inputValue.value);
-
                 console.log(data)
+                const tableRows = userTable.children[1].children;
+                const rowList = Array.from(tableRows)
+                rowList.forEach(eachTr => {
+                    if(eachTr.dataset.id == id) {
+                        eachTr.children[1].children[1].innerText = inputValue.value;
+                        inputValue.style.display = "none";
+                        editBtn.style.display = "block";
+                    }
+                });
             }).catch(err => console.log(err));
     });
-}
+}   
+    
+
 
 
 //////////////////////////////    DELETE    //////////////////////////////////
