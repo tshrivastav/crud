@@ -2,7 +2,6 @@ const url = "http://localhost:3000/details";
 const userTable = document.getElementById("users-table");
 const form = document.getElementById("form-list");
 const submitInput = document.getElementById("add-list");
-const updateInput = document.getElementById("update-list");
 
 let idInput = document.getElementById("id");
 let nameInput = document.getElementById("name");
@@ -13,7 +12,7 @@ let passwordInput = document.getElementById("password");
 function mapTr(details) {
     return `<tr data-id=${details.id}>
                 <td>${details.id}</td>
-                <td><input type="text" style="display: none;" class="editname" />
+                <td class="edit-td"><input type="text" style="display: none;" class="editname" />
                 <div class="edit-btn">
                         ${details.name}
                     </div>
@@ -21,7 +20,8 @@ function mapTr(details) {
                 </td>
                 <td>${details.email}</td>
                 <td>${details.password}</td>
-                <td onclick="enableInputName('${details.name}', ${details.id})"><a>Edit</a>
+                <td onclick="enableInputName(event,'${details.name}', ${details.id})"><a>Edit</a>
+                <td class="undateInput" onclick="updateDetails(event,'${details.name}', ${details.id})"> <a>Update</a></td>
                 <td><a onclick="deleteRow(${details.id})">Delete</a></td>
                 </tr>`;
     }
@@ -83,53 +83,41 @@ fetch(url)
 
 
 //////////////////// PUT ////////////////////////////////////
-function enableInputName(name, id) {
-    let inputForUPdate;
-    let divForDisplay;
-    Array.from(userTable.children[1].children).forEach(eachRow => {
-        if(eachRow.dataset.id == id) {
-            inputForUPdate = eachRow.children[1].children[0];
-            inputForUPdate.style.display = "block";
-            inputForUPdate.value = name;
 
-            divForDisplay = eachRow.children[1].children[1];
-            divForDisplay.style.display = "none";
-        }
-    });   
+function enableInputName(event, name, id) {
+    console.log(name)
+    const tr = event.target.parentElement.parentElement;
+    const td = tr.querySelector(".edit-td");
+    td.children[0].style.display = "block";
+    td.children[0].value = name;
 
-    
+    td.children[1].style.display = "none";
+}
+///////////////////// UPDATE  /////////////////////////////////////////
 
-    
-    updateInput.addEventListener("click", (e) => {
-        e.preventDefault();
-        fetch(`${url}/${id}`, {
-            method: "PUT",
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: inputForUPdate.value,
-            }),
-            })
-            .then(res => res.text())
-            .then(data => {
-                console.log(data)
-                const tableRows = userTable.children[1].children;
-                const rowList = Array.from(tableRows)
-                rowList.forEach(eachTr => {
-                    if(eachTr.dataset.id == id) {
-                        eachTr.children[1].children[1].innerText = inputForUPdate.value;
-                        inputForUPdate.style.display = "none";
-                        divForDisplay.style.display = "block";
-                    }
-                });
-            }).catch(err => console.log(err));
-    });
-}   
-    
-
-
+function updateDetails(event, name, id) {
+    let tr;
+    let td;
+    fetch(`${url}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name: td.value,
+        }),
+        })
+        .then(res => res.text())
+        .then(data => {
+            console.log(data)
+            tr = event.target.parentElement.parentElement;
+            td = tr.querySelector(".edit-td");
+            td.children[0].innerHTML = td.value;
+            td.children[0].style.display = "none";
+            td.children[1].style.display = "block";
+        }).catch(err => console.log(err));
+}
 
 //////////////////////////////    DELETE    //////////////////////////////////
 function deleteRow(id) {
