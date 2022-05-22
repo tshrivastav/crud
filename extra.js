@@ -2,7 +2,6 @@ const url = "http://localhost:3000/details";
 const userTable = document.getElementById("users-table");
 const form = document.getElementById("form-list");
 const submitInput = document.getElementById("add-list");
-const updateInput = document.getElementById("update-list");
 
 let idInput = document.getElementById("id");
 let nameInput = document.getElementById("name");
@@ -12,17 +11,18 @@ let passwordInput = document.getElementById("password");
 
 function mapTr(details) {
     return `<tr data-id=${details.id}>
-                <td>${details.id}</td>
-                <td><input type="text" style="display: none;" class="editname" />
+                <td class="td-id">${details.id}</td>
+                <td class="edit-td">
+                    <input type="text" style="display: none;" class="editname" />
                 <div class="edit-btn">
-                        ${details.name}
-                    </div>
-                    </td>
+                    ${details.name}
+                </div>
+                    <i onclick="updateDetails(event, ${details.id})" style="display: none;" class="fa-solid fa-pen-to-square"></i>
                 </td>
                 <td>${details.email}</td>
                 <td>${details.password}</td>
-                <td onclick="enableInputName('${details.name}', ${details.id})"><a>Edit</a>
-                <td><a onclick="deleteRow(${details.id})">Delete</a></td>
+                <td onclick="enableInputName(event,'${details.name}', ${details.id})"><a>Edit</a>
+                <td><a onclick="deleteRow(event, ${details.id})">Delete</a></td>
                 </tr>`;
     }
 
@@ -80,69 +80,68 @@ fetch(url)
        }).catch(err => console.log(err));
 
     });
+//////////////////// Toggle //////////////////////////////////// 
+function toggle(event, name, inVisible) {
+    const tr = event.target.parentElement.parentElement;
+    const td = tr.querySelector(".edit-td");
+    if(inVisible) {
+        td.children[0].style.display = "block";
+        td.children[0].value = name;
+        td.children[2].style.display = "block";
 
+        td.children[1].style.display = "none";
+    }
+    else {
+        td.children[0].style.display = "none";
+        td.children[1].style.display = "block";
+        td.children[2].style.display = "none";
+    }
+    
+}
 
 //////////////////// PUT ////////////////////////////////////
-function enableInputName(name, id) {
-    let inputForUPdate;
-    let divForDisplay;
-    Array.from(userTable.children[1].children).forEach(eachRow => {
-        if(eachRow.dataset.id == id) {
-            inputForUPdate = eachRow.children[1].children[0];
-            inputForUPdate.style.display = "block";
-            inputForUPdate.value = name;
 
-            divForDisplay = eachRow.children[1].children[1];
-            divForDisplay.style.display = "none";
-        }
-    });   
+function enableInputName(event, name, id) {
+    toggle(event, name, true);
+}
+///////////////////// UPDATE  /////////////////////////////////////////
 
+function updateDetails(event, name,id) {
+    const tr = event.target.parentElement.parentElement;
+    const td = tr.querySelector(".edit-td");
+    let nameUpdateInput = td.children[0].value;
     
-
-    
-    updateInput.addEventListener("click", (e) => {
-        e.preventDefault();
-        fetch(`${url}/${id}`, {
-            method: "PUT",
-            headers: {
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                name: inputForUPdate.value,
-            }),
-            })
-            .then(res => res.text())
-            .then(data => {
-                console.log(data)
-                const tableRows = userTable.children[1].children;
-                const rowList = Array.from(tableRows)
-                rowList.forEach(eachTr => {
-                    if(eachTr.dataset.id == id) {
-                        eachTr.children[1].children[1].innerText = inputForUPdate.value;
-                        inputForUPdate.style.display = "none";
-                        divForDisplay.style.display = "block";
-                    }
-                });
-            }).catch(err => console.log(err));
-    });
-}   
-    
+    fetch(`${url}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            name: nameUpdateInput,
+        }),
+        })
+        .then(res => res.text())
+        .then(data => {
+            console.log(data)
+            td.children[1].innerText = nameUpdateInput;
+            toggle(event, name, false);
 
 
+            
+        }).catch(err => console.log(err));
+}
 
 //////////////////////////////    DELETE    //////////////////////////////////
-function deleteRow(id) {
+function deleteRow(event, id) {
          fetch(`${url}/${id}`, {
             method: "DELETE",
         })
         .then(res => res.text())
         .then(() => {
-            Array.from(userTable.children[1].children).forEach(element => {
-                if(element.dataset.id == id) {
-                    element.remove(); 
-                }
-            });
+        const tr = event.target.parentElement.parentElement;
+            tr.remove(); 
+                
         })
         .catch(err => console.log(err))
     }

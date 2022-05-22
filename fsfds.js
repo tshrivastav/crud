@@ -11,18 +11,20 @@ let passwordInput = document.getElementById("password");
 
 function mapTr(details) {
     return `<tr data-id=${details.id}>
-                <td>${details.id}</td>
-                <td class="edit-td"><input type="text" style="display: none;" class="editname" />
+                <td class="td-id">${details.id}</td>
+                <td class="edit-td">
+                <div style="display: none;">
+                    <input type="text"  class="editname" />
+                    <i onclick="updateDetails(event, ${details.id})" class="fa-solid fa-pen-to-square""></i>
+                </div>
                 <div class="edit-btn">
-                        ${details.name}
-                    </div>
-                    </td>
+                    ${details.name}
+                </div>
                 </td>
                 <td>${details.email}</td>
                 <td>${details.password}</td>
                 <td onclick="enableInputName(event,'${details.name}', ${details.id})"><a>Edit</a>
-                <td class="undateInput" onclick="updateDetails(event,'${details.name}', ${details.id})"> <a>Update</a></td>
-                <td><a onclick="deleteRow(${details.id})">Delete</a></td>
+                <td onclick="deleteRow(event, ${details.id})"><i class="fa-solid fa-delete-left"></i></td>
                 </tr>`;
     }
 
@@ -80,24 +82,34 @@ fetch(url)
        }).catch(err => console.log(err));
 
     });
-
+//////////////////// Toggle //////////////////////////////////// 
+function toggle(event, name, inVisible) {
+    const tr = event.target.parentElement.parentElement;
+    let td = tr.querySelector(".edit-td");
+    if(inVisible) {
+        td.children[0].style.display = "block";
+        td.children[0].children[0].value = name;
+        td.children[1].style.display = "none";
+        return;
+    }
+    td.children[1].style.display = "block";  
+    td.children[0].style.display = "none";  
+}
 
 //////////////////// PUT ////////////////////////////////////
 
 function enableInputName(event, name, id) {
-    console.log(name)
-    const tr = event.target.parentElement.parentElement;
-    const td = tr.querySelector(".edit-td");
-    td.children[0].style.display = "block";
-    td.children[0].value = name;
-
-    td.children[1].style.display = "none";
+    toggle(event, name, true);
 }
 ///////////////////// UPDATE  /////////////////////////////////////////
 
-function updateDetails(event, name, id) {
-    let tr;
-    let td;
+function updateDetails(event, id) {
+    const tr = event.target.parentElement.parentElement;
+    const td = tr.querySelector(".edit-td");
+    let nameUpdateInput = td.children[0].children[0].value; 
+
+    console.log(nameUpdateInput)
+    
     fetch(`${url}/${id}`, {
         method: "PUT",
         headers: {
@@ -105,32 +117,28 @@ function updateDetails(event, name, id) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            name: td.value,
+            name: nameUpdateInput,
         }),
         })
         .then(res => res.text())
         .then(data => {
             console.log(data)
-            tr = event.target.parentElement.parentElement;
-            td = tr.querySelector(".edit-td");
-            td.children[0].innerHTML = td.value;
-            td.children[0].style.display = "none";
-            td.children[1].style.display = "block";
+            td.children[1].innerText = nameUpdateInput;
+            toggle(event, "", false);
+            
         }).catch(err => console.log(err));
 }
 
 //////////////////////////////    DELETE    //////////////////////////////////
-function deleteRow(id) {
+function deleteRow(event, id) {
          fetch(`${url}/${id}`, {
             method: "DELETE",
         })
         .then(res => res.text())
         .then(() => {
-            Array.from(userTable.children[1].children).forEach(element => {
-                if(element.dataset.id == id) {
-                    element.remove(); 
-                }
-            });
+        const tr = event.target.parentElement.parentElement;
+            tr.remove(); 
+                
         })
         .catch(err => console.log(err))
     }

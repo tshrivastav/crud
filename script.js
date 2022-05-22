@@ -12,17 +12,19 @@ let passwordInput = document.getElementById("password");
 function mapTr(details) {
     return `<tr data-id=${details.id}>
                 <td class="td-id">${details.id}</td>
-                <td class="edit-td"><input type="text" style="display: none;" class="editname" />
+                <td class="edit-td">
+                <div style="display: none;">
+                    <input type="text"  class="editname" />
+                    <i onclick="updateDetails(event, ${details.id})" class="fa-solid fa-pen-to-square""></i>
+                </div>
                 <div class="edit-btn">
-                        ${details.name}
-                    </div>
-                    <i onclick="updateDetails(event, ${details.id})" style="display: none;" class="fa-solid fa-pen-to-square"></i>
-                    </td>
+                    ${details.name}
+                </div>
                 </td>
                 <td>${details.email}</td>
                 <td>${details.password}</td>
                 <td onclick="enableInputName(event,'${details.name}', ${details.id})"><a>Edit</a>
-                <td><a onclick="deleteRow(event, ${details.id})">Delete</a></td>
+                <td onclick="deleteRow(event, ${details.id})"><i class="fa-solid fa-delete-left"></i></td>
                 </tr>`;
     }
 
@@ -83,20 +85,15 @@ fetch(url)
 //////////////////// Toggle //////////////////////////////////// 
 function toggle(event, name, inVisible) {
     const tr = event.target.parentElement.parentElement;
-    const td = tr.querySelector(".edit-td");
+    let td = tr.querySelector(".edit-td");
     if(inVisible) {
         td.children[0].style.display = "block";
-        td.children[2].style.display = "block";
-        td.children[0].value = name;
-
+        td.children[0].children[0].value = name;
         td.children[1].style.display = "none";
+        return;
     }
-    else {
-        td.children[0].style.display = "none";
-        td.children[1].style.display = "block";
-        td.children[2].style.display = "none";
-    }
-    
+    td.children[1].style.display = "block";  
+    td.children[0].style.display = "none";  
 }
 
 //////////////////// PUT ////////////////////////////////////
@@ -105,11 +102,13 @@ function enableInputName(event, name, id) {
     toggle(event, name, true);
 }
 ///////////////////// UPDATE  /////////////////////////////////////////
-
 function updateDetails(event, id) {
     const tr = event.target.parentElement.parentElement;
-    const td = tr.querySelector(".edit-td");
-    let nameUpdateInput = td.children[0].value;
+    const td = tr;
+    console.log(td)
+    let nameUpdateInput = td.children[0].children[0].value;
+
+    console.log(nameUpdateInput)
     
     fetch(`${url}/${id}`, {
         method: "PUT",
@@ -125,9 +124,7 @@ function updateDetails(event, id) {
         .then(data => {
             console.log(data)
             td.children[1].innerText = nameUpdateInput;
-            toggle(event, false);
-
-
+            toggle(event, "", false);
             
         }).catch(err => console.log(err));
 }
@@ -140,9 +137,8 @@ function deleteRow(event, id) {
         .then(res => res.text())
         .then(() => {
         const tr = event.target.parentElement.parentElement;
-            if(tr) {
-                    tr.remove(); 
-                }
+            tr.remove(); 
+                
         })
         .catch(err => console.log(err))
     }
