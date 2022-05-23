@@ -45,11 +45,14 @@ td, th, td{
     justify-content: space-between;
     align-items: center;
 }
+
 .td-id {
     width: 300px;
 }
 
-
+.edit-icon {
+    width: 400px;
+}
 
 
 
