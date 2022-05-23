@@ -1,3 +1,4 @@
+
 const url = "http://localhost:3000/details";
 const userTable = document.getElementById("users-table");
 const form = document.getElementById("form-list");
@@ -14,16 +15,16 @@ function mapTr(details) {
                 <td class="edit-td">
                     <div style="display: none;">
                         <input type="text"/>
-                        <i onclick="updateDetails(event, ${details.id})" class="fa-solid fa-floppy-disk"></i>
+                        <button class="save-btn" onclick="updateDetails(event, ${details.id})">Save</button>
                     </div>
                     <div>
                         ${details.name}
                     </div>
-                    <td class="edit-icon"><i onclick="enableInputName(event,'${details.name}', ${details.id})" class="fa-solid fa-user-pen"></i></td>
+                    <button class="edit-btn" onclick="enableInputName(event,'${details.name}', ${details.id})">Edit</button>
                 </td>
                 <td>${details.email}</td>
                 <td>${details.password}</td>
-                <td><i onclick="deleteRow(event, ${details.id})" class="fa-solid fa-delete-left"></i></td>
+                <td><button class="delete-btn" onclick="deleteRow(event, ${details.id})">Delete</button></td>
             </tr>`;
     }
 
@@ -88,13 +89,14 @@ function toggle(tr, name, inVisible) {
         td.children[0].style.display = "block";
         td.children[0].children[0].value = name;
         td.children[1].style.display = "none";
+        td.children[2].style.display = "none";
         return;
     }
     
     td.children[1].style.display = "block";  
     td.children[0].style.display = "none"; 
     td.children[1].innerText = name;
- 
+    td.children[2].style.display = "block";  
 }
 
 //////////////////// PUT ////////////////////////////////////

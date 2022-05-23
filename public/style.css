@@ -50,9 +50,31 @@ td, th, td{
     width: 300px;
 }
 
-.edit-icon {
-    width: 400px;
+button {
+    border: none;
+    outline: none;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 6px;
+    color: white;
+    font-size: 15px;
 }
+
+.edit-btn  {
+    background-color: rgb(163, 207, 240);
+
+}
+
+.save-btn  {
+    background-color: rgb(147, 213, 147);
+}
+
+.delete-btn {
+    background-color: rgb(224, 142, 133);
+}
+
 
 
 
